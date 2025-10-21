@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  deployflow-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.deployflow
+    container_name: deployflow-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./storage:/var/www/storage
+    networks:
+      - deployflow-network
+    depends_on:
+      - deployflow-db
+      - deployflow-redis
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_CONNECTION=pgsql
+      - DB_HOST=deployflow-db
+      - DB_PORT=5432
+      - DB_DATABASE=deployflow
+      - DB_USERNAME=deployflow
+      - DB_PASSWORD=deployflow_password
+      - REDIS_HOST=deployflow-redis
+      - REDIS_PORT=6379
+      - QUEUE_CONNECTION=redis
+      - BROADCAST_DRIVER=redis
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+
+  deployflow-db:
+    image: postgres:15-alpine
+    container_name: deployflow-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=deployflow
+      - POSTGRES_USER=deployflow
+      - POSTGRES_PASSWORD=deployflow_password
+    volumes:
+      - deployflow-db-data:/var/lib/postgresql/data
+    networks:
+      - deployflow-network
+    ports:
+      - "5432:5432"
+
+  deployflow-redis:
+    image: redis:7-alpine
+    container_name: deployflow-redis
+    restart: unless-stopped
+    volumes:
+      - deployflow-redis-data:/data
+    networks:
+      - deployflow-network
+    ports:
+      - "6379:6379"
+
+  deployflow-nginx:
+    image: nginx:alpine
+    container_name: deployflow-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/ssl:/etc/nginx/ssl
+      - ./public:/var/www/public
+    networks:
+      - deployflow-network
+    depends_on:
+      - deployflow-app
+
+  deployflow-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.deployflow
+    container_name: deployflow-worker
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./storage:/var/www/storage
+    networks:
+      - deployflow-network
+    depends_on:
+      - deployflow-db
+      - deployflow-redis
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_CONNECTION=pgsql
+      - DB_HOST=deployflow-db
+      - DB_PORT=5432
+      - DB_DATABASE=deployflow
+      - DB_USERNAME=deployflow
+      - DB_PASSWORD=deployflow_password
+      - REDIS_HOST=deployflow-redis
+      - REDIS_PORT=6379
+      - QUEUE_CONNECTION=redis
+    command: php artisan queue:work --verbose --tries=3 --timeout=90
+
+volumes:
+  deployflow-db-data:
+  deployflow-redis-data:
+
+networks:
+  deployflow-network:
+    driver: bridge

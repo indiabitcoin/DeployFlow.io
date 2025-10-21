@@ -1,0 +1,246 @@
+# DeployFlow.io .gitignore
+
+# Laravel
+/vendor/
+/node_modules/
+/public/hot
+/public/storage
+/storage/*.key
+/storage/app/public
+/storage/framework/cache
+/storage/framework/sessions
+/storage/framework/testing
+/storage/framework/views
+/storage/logs
+/bootstrap/cache
+
+# Environment files
+.env
+.env.backup
+.env.production
+.env.local
+.env.*.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Docker
+.dockerignore
+
+# DeployFlow.io specific
+/data/
+/deployflow-data/
+*.backup
+*.sql
+*.dump
+
+# SSL certificates
+*.pem
+*.crt
+*.key
+*.p12
+
+# Database dumps
+*.sql.gz
+*.dump.gz
+
+# Backup files
+backups/
+*.backup
+
+# Local development
+docker-compose.override.yml
+.env.docker
+
+# Testing
+/coverage
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+
+# Laravel Mix
+/public/mix-manifest.json
+
+# Laravel Telescope
+/storage/telescope
+
+# Laravel Horizon
+/storage/horizon
+
+# Laravel Dusk
+/tests/Browser/screenshots
+/tests/Browser/console
+
+# Laravel Pint
+.php-cs-fixer.cache
+
+# PHP CS Fixer
+.php-cs-fixer.cache
+
+# PHPStan
+.phpstan/
+
+# Rector
+/rector.php
+
+# Pest
+/.pest/
+
+# Build artifacts
+/build/
+/dist/
+
+# Package files
+*.tar.gz
+*.zip
+
+# Local configuration
+config/local.php
+config/local.yml
+
+# Cache files
+*.cache
+.cache/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Lock files (keep package-lock.json for consistency)
+# package-lock.json
+yarn.lock
+
+# Composer
+composer.phar
+
+# PHP
+*.php~
+*.php.bak
+
+# Laravel specific
+/public/build/
+/public/storage
+/storage/app/public
+/storage/framework/cache/data
+/storage/framework/sessions
+/storage/framework/testing
+/storage/framework/views
+/storage/logs
+
+# DeployFlow.io deployment files
+deploy.sh
+scripts/deploy-vps.sh
+install.sh
+upgrade.sh
+docker-compose.deployflow.yml
+Dockerfile.deployflow
+env.production.example
+env.production.template
+
+# Sensitive files and test data
+database/seeders/
+tests/Feature/MultilineEnvironmentVariableTest.php
+tests/Unit/PrivateKeyStorageTest.php
+**/PrivateKeySeeder.php
+**/ProductionSeeder.php
+
+# Keep these files for reference but don't commit sensitive data
+!docker-compose.prod.yml
+!env.production.template
+!install.sh
+!upgrade.sh
+!deploy.sh
+!scripts/deploy-vps.sh
+!docker-compose.deployflow.yml
+!Dockerfile.deployflow

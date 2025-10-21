@@ -1,0 +1,148 @@
+version: '3.8'
+
+services:
+  deployflow-app:
+    image: deployflow/deployflow:latest
+    container_name: deployflow-app
+    restart: unless-stopped
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=http://localhost:8000
+      - DB_CONNECTION=pgsql
+      - DB_HOST=deployflow-db
+      - DB_PORT=5432
+      - DB_DATABASE=deployflow
+      - DB_USERNAME=deployflow
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=deployflow-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - QUEUE_CONNECTION=redis
+      - BROADCAST_DRIVER=redis
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - PUSHER_APP_ID=${PUSHER_APP_ID}
+      - PUSHER_APP_KEY=${PUSHER_APP_KEY}
+      - PUSHER_APP_SECRET=${PUSHER_APP_SECRET}
+      - PUSHER_HOST=deployflow-soketi
+      - PUSHER_PORT=6001
+      - PUSHER_SCHEME=http
+      - PUSHER_APP_CLUSTER=mt1
+    volumes:
+      - /data/deployflow/applications:/app/storage/applications
+      - /data/deployflow/databases:/app/storage/databases
+      - /data/deployflow/backups:/app/storage/backups
+      - /data/deployflow/services:/app/storage/services
+      - /data/deployflow/ssh:/app/storage/ssh
+      - /data/deployflow/proxy:/app/storage/proxy
+      - /data/deployflow/webhooks-during-maintenance:/app/storage/webhooks-during-maintenance
+    networks:
+      - deployflow
+    depends_on:
+      - deployflow-db
+      - deployflow-redis
+      - deployflow-soketi
+    ports:
+      - "8000:80"
+
+  deployflow-db:
+    image: postgres:15-alpine
+    container_name: deployflow-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=deployflow
+      - POSTGRES_USER=deployflow
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - deployflow-db-data:/var/lib/postgresql/data
+    networks:
+      - deployflow
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U deployflow -d deployflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  deployflow-redis:
+    image: redis:7-alpine
+    container_name: deployflow-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - deployflow-redis-data:/data
+    networks:
+      - deployflow
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  deployflow-soketi:
+    image: soketi/soketi:1.0-16-alpine
+    container_name: deployflow-soketi
+    restart: unless-stopped
+    environment:
+      - SOKETI_DEBUG=0
+      - SOKETI_DEFAULT_APP_ID=${PUSHER_APP_ID}
+      - SOKETI_DEFAULT_APP_KEY=${PUSHER_APP_KEY}
+      - SOKETI_DEFAULT_APP_SECRET=${PUSHER_APP_SECRET}
+      - SOKETI_DB_REDIS_HOST=deployflow-redis
+      - SOKETI_DB_REDIS_PORT=6379
+      - SOKETI_DB_REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      - deployflow
+    depends_on:
+      - deployflow-redis
+    ports:
+      - "6001:6001"
+
+  deployflow-worker:
+    image: deployflow/deployflow:latest
+    container_name: deployflow-worker
+    restart: unless-stopped
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=http://localhost:8000
+      - DB_CONNECTION=pgsql
+      - DB_HOST=deployflow-db
+      - DB_PORT=5432
+      - DB_DATABASE=deployflow
+      - DB_USERNAME=deployflow
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=deployflow-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - QUEUE_CONNECTION=redis
+      - PUSHER_APP_ID=${PUSHER_APP_ID}
+      - PUSHER_APP_KEY=${PUSHER_APP_KEY}
+      - PUSHER_APP_SECRET=${PUSHER_APP_SECRET}
+      - PUSHER_HOST=deployflow-soketi
+      - PUSHER_PORT=6001
+      - PUSHER_SCHEME=http
+      - PUSHER_APP_CLUSTER=mt1
+    volumes:
+      - /data/deployflow/applications:/app/storage/applications
+      - /data/deployflow/databases:/app/storage/databases
+      - /data/deployflow/backups:/app/storage/backups
+      - /data/deployflow/services:/app/storage/services
+      - /data/deployflow/ssh:/app/storage/ssh
+      - /data/deployflow/proxy:/app/storage/proxy
+      - /data/deployflow/webhooks-during-maintenance:/app/storage/webhooks-during-maintenance
+    networks:
+      - deployflow
+    depends_on:
+      - deployflow-db
+      - deployflow-redis
+      - deployflow-soketi
+    command: php artisan queue:work --verbose --tries=3 --timeout=90
+
+volumes:
+  deployflow-db-data:
+  deployflow-redis-data:
+
+networks:
+  deployflow:
+    external: true

@@ -1,0 +1,281 @@
+/* DeployFlow.io Custom Styles */
+
+/* Color Variables */
+:root {
+    --deployflow-primary: #3B82F6;
+    --deployflow-secondary: #10B981;
+    --deployflow-accent: #F59E0B;
+    --deployflow-dark: #1F2937;
+    --deployflow-light: #F9FAFB;
+}
+
+/* DeployFlow.io Brand Colors */
+.deployflow-primary {
+    color: var(--deployflow-primary);
+}
+
+.deployflow-secondary {
+    color: var(--deployflow-secondary);
+}
+
+.deployflow-accent {
+    color: var(--deployflow-accent);
+}
+
+.bg-deployflow-primary {
+    background-color: var(--deployflow-primary);
+}
+
+.bg-deployflow-secondary {
+    background-color: var(--deployflow-secondary);
+}
+
+.bg-deployflow-accent {
+    background-color: var(--deployflow-accent);
+}
+
+/* Gradient Backgrounds */
+.deployflow-gradient {
+    background: linear-gradient(135deg, var(--deployflow-primary), var(--deployflow-secondary));
+}
+
+.deployflow-gradient-horizontal {
+    background: linear-gradient(90deg, var(--deployflow-primary), var(--deployflow-secondary));
+}
+
+.deployflow-gradient-radial {
+    background: radial-gradient(circle, var(--deployflow-primary), var(--deployflow-secondary));
+}
+
+/* Text Gradients */
+.deployflow-text-gradient {
+    background: linear-gradient(135deg, var(--deployflow-primary), var(--deployflow-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Flow Builder Specific Styles */
+.flow-step-card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md border-2 border-gray-200 dark:border-gray-600 transition-all duration-200;
+}
+
+.flow-step-card:hover {
+    @apply shadow-lg border-blue-300 dark:border-blue-500;
+}
+
+.flow-step-card.active {
+    @apply border-blue-500 dark:border-blue-400 shadow-lg;
+}
+
+.flow-step-number {
+    @apply w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium;
+}
+
+.flow-step-number.disabled {
+    @apply bg-gray-400;
+}
+
+.flow-arrow {
+    @apply text-gray-400 transition-colors duration-200;
+}
+
+.flow-arrow:hover {
+    @apply text-blue-500;
+}
+
+/* Dashboard Cards */
+.deployflow-card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-all duration-200;
+}
+
+.deployflow-card:hover {
+    @apply shadow-lg;
+}
+
+.deployflow-card-header {
+    @apply flex items-center justify-between mb-4;
+}
+
+.deployflow-card-title {
+    @apply text-lg font-semibold text-gray-900 dark:text-white;
+}
+
+.deployflow-card-subtitle {
+    @apply text-sm text-gray-500 dark:text-gray-400;
+}
+
+/* Metrics Cards */
+.metric-card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow p-6;
+}
+
+.metric-card-icon {
+    @apply w-8 h-8 rounded-md flex items-center justify-center;
+}
+
+.metric-card-value {
+    @apply text-2xl font-semibold text-gray-900 dark:text-white;
+}
+
+.metric-card-label {
+    @apply text-sm font-medium text-gray-500 dark:text-gray-400;
+}
+
+/* Status Indicators */
+.status-indicator {
+    @apply w-2 h-2 rounded-full;
+}
+
+.status-online {
+    @apply bg-green-400;
+}
+
+.status-offline {
+    @apply bg-red-400;
+}
+
+.status-warning {
+    @apply bg-yellow-400;
+}
+
+.status-unknown {
+    @apply bg-gray-400;
+}
+
+/* Buttons */
+.deployflow-btn {
+    @apply px-4 py-2 rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.deployflow-btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500;
+}
+
+.deployflow-btn-secondary {
+    @apply bg-gray-600 hover:bg-gray-700 text-white focus:ring-gray-500;
+}
+
+.deployflow-btn-success {
+    @apply bg-green-600 hover:bg-green-700 text-white focus:ring-green-500;
+}
+
+.deployflow-btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white focus:ring-red-500;
+}
+
+/* Form Elements */
+.deployflow-input {
+    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white;
+}
+
+.deployflow-select {
+    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white;
+}
+
+.deployflow-textarea {
+    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white;
+}
+
+/* Navigation */
+.deployflow-nav-link {
+    @apply inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 transition-colors duration-200;
+}
+
+.deployflow-nav-link.active {
+    @apply border-blue-500 text-blue-600 dark:text-blue-400;
+}
+
+/* Animations */
+@keyframes deployflow-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.deployflow-pulse {
+    animation: deployflow-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes deployflow-bounce {
+    0%, 100% {
+        transform: translateY(-25%);
+        animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+    }
+    50% {
+        transform: translateY(0);
+        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+}
+
+.deployflow-bounce {
+    animation: deployflow-bounce 1s infinite;
+}
+
+/* Loading States */
+.deployflow-loading {
+    @apply animate-pulse;
+}
+
+.deployflow-skeleton {
+    @apply bg-gray-200 dark:bg-gray-700 rounded;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .deployflow-mobile-hidden {
+        @apply hidden;
+    }
+    
+    .deployflow-mobile-full {
+        @apply w-full;
+    }
+}
+
+/* Dark Mode Enhancements */
+@media (prefers-color-scheme: dark) {
+    .deployflow-auto-dark {
+        @apply dark:bg-gray-900 dark:text-white;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .deployflow-no-print {
+        display: none !important;
+    }
+    
+    .deployflow-print-only {
+        display: block !important;
+    }
+}
+
+/* Accessibility */
+.deployflow-sr-only {
+    @apply sr-only;
+}
+
+.deployflow-focus-visible:focus-visible {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
+
+/* Custom Scrollbar */
+.deployflow-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.deployflow-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-800;
+}
+
+.deployflow-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+}
+
+.deployflow-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400 dark:bg-gray-500;
+}

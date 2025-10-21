@@ -1,0 +1,77 @@
+name: DeployFlow.io Auto Deploy
+
+on:
+  push:
+    branches: [ main, production ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+        extensions: mbstring, dom, fileinfo, mysql, pgsql, redis, gd, zip, curl, xml, bcmath, intl
+        coverage: none
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install Composer dependencies
+      run: composer install --no-dev --optimize-autoloader --no-interaction
+      
+    - name: Install NPM dependencies
+      run: npm ci
+      
+    - name: Build assets
+      run: npm run build
+      
+    - name: Deploy to Railway
+      if: github.ref == 'refs/heads/main'
+      uses: railway-app/railway-deploy@v1
+      with:
+        railway-token: ${{ secrets.RAILWAY_TOKEN }}
+        service: ${{ secrets.RAILWAY_SERVICE }}
+        
+    - name: Deploy to Render
+      if: github.ref == 'refs/heads/production'
+      uses: johnbeynon/render-deploy-action@v0.0.8
+      with:
+        service-id: ${{ secrets.RENDER_SERVICE_ID }}
+        api-key: ${{ secrets.RENDER_API_KEY }}
+        
+    - name: Deploy to DigitalOcean
+      if: github.ref == 'refs/heads/production'
+      uses: digitalocean/app_action@v1
+      with:
+        app_id: ${{ secrets.DO_APP_ID }}
+        api_token: ${{ secrets.DO_API_TOKEN }}
+        
+    - name: Deploy to Fly.io
+      if: github.ref == 'refs/heads/production'
+      uses: superfly/flyctl-actions/setup-flyctl@master
+      with:
+        version: latest
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      run: |
+        flyctl deploy --remote-only
+        
+    - name: Notify deployment status
+      uses: 8398a7/action-slack@v3
+      if: always()
+      with:
+        status: ${{ job.status }}
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
