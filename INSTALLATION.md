@@ -2,11 +2,20 @@
 
 ## 🚀 **Quick Installation**
 
-DeployFlow.io can be installed with a single command:
+DeployFlow.io can be installed with a single command. Choose your preferred method:
 
+### **Method 1: Coolify-Style Installation (Root)**
+```bash
+sudo su
+curl -fsSL https://raw.githubusercontent.com/indiabitcoin/DeployFlow.io/main/install-root.sh | bash
+```
+
+### **Method 2: Secure Installation (User)**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/indiabitcoin/DeployFlow.io/main/install.sh | sudo bash
 ```
+
+**Note:** Method 1 is simpler (like Coolify), Method 2 is more secure (follows best practices).
 
 ## 📋 **What the Installation Script Does**
 
