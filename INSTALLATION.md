@@ -1,285 +1,124 @@
-# DeployFlow.io Single-Command Installation
+# DeployFlow.io Installation Guide
 
-## 🚀 Quick Installation (Recommended)
+## 🚀 **Quick Installation**
 
-DeployFlow.io can be installed with a single command, just like Coolify:
-
-```bash
-curl -fsSL https://cdn.deployflow.io/install.sh | sudo bash
-```
-
-This script will automatically:
-- ✅ Check system requirements
-- ✅ Install Docker Engine
-- ✅ Create necessary directories
-- ✅ Generate SSH keys
-- ✅ Download configuration files
-- ✅ Start DeployFlow.io
-
-## 📋 Prerequisites
-
-### Server Requirements
-- **OS**: Linux (Ubuntu, Debian, CentOS, Fedora, etc.)
-- **Architecture**: x86_64 or aarch64
-- **Memory**: Minimum 2GB RAM (4GB recommended)
-- **Storage**: Minimum 30GB free space
-- **CPU**: Minimum 2 cores
-
-### Supported Operating Systems
-- **Debian-based**: Ubuntu, Debian (all versions)
-- **RedHat-based**: CentOS, Fedora, RedHat, AlmaLinux, Rocky
-- **SUSE-based**: SLES, SUSE, openSUSE
-- **Arch Linux**: Arch Linux and derivatives
-- **Alpine Linux**: Alpine Linux
-- **Raspberry Pi**: Raspberry Pi OS 64-bit
-
-## 🔧 Installation Methods
-
-### 1. Quick Installation (Recommended)
+DeployFlow.io can be installed with a single command:
 
 ```bash
-# Run as root
-curl -fsSL https://cdn.deployflow.io/install.sh | bash
-
-# Or with sudo
-curl -fsSL https://cdn.deployflow.io/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/indiabitcoin/DeployFlow.io/main/install.sh | sudo bash
 ```
 
-### 2. Manual Installation
+## 📋 **What the Installation Script Does**
 
-If the automatic script fails, you can install manually:
+The installation script automatically:
+
+1. **Installs Docker** - Detects your OS and installs Docker with Docker Compose
+2. **Creates DeployFlow User** - Sets up a dedicated `deployflow` user for security
+3. **Creates Directories** - Sets up `/opt/deployflow` with proper permissions
+4. **Generates Secure Values** - Creates random passwords and keys
+5. **Configures Environment** - Sets up production environment variables
+6. **Creates Docker Compose** - Configures all services (app, database, Redis, Soketi)
+7. **Sets up Systemd Service** - Enables automatic startup and management
+8. **Starts DeployFlow.io** - Launches all services
+
+## 🔧 **System Requirements**
+
+- **OS**: Ubuntu 18.04+, Debian 9+, CentOS 7+, RHEL 7+
+- **RAM**: Minimum 2GB, Recommended 4GB+
+- **Disk**: Minimum 10GB free space
+- **Network**: Internet access for Docker image downloads
+- **User**: Non-root user with sudo privileges
+
+## 📊 **After Installation**
+
+Once installed, DeployFlow.io will be available at:
+- **URL**: http://localhost:8000
+- **Directory**: `/opt/deployflow`
+- **User**: `deployflow`
+
+### **Management Commands**
 
 ```bash
-# 1. Install Docker
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
+# Start DeployFlow.io
+sudo systemctl start deployflow
 
-# 2. Create directories
-sudo mkdir -p /data/deployflow/{source,ssh,applications,databases,backups,services,proxy}
+# Stop DeployFlow.io
+sudo systemctl stop deployflow
 
-# 3. Download files
-cd /data/deployflow/source
-sudo curl -fsSL https://cdn.deployflow.io/docker-compose.yml -o docker-compose.yml
-sudo curl -fsSL https://cdn.deployflow.io/docker-compose.prod.yml -o docker-compose.prod.yml
-sudo curl -fsSL https://cdn.deployflow.io/.env.production -o .env
+# Restart DeployFlow.io
+sudo systemctl restart deployflow
 
-# 4. Generate SSH key
-sudo ssh-keygen -f /data/deployflow/ssh/keys/deployflow@localhost -t ed25519 -N '' -C deployflow@localhost
-sudo cat /data/deployflow/ssh/keys/deployflow@localhost.pub >> ~/.ssh/authorized_keys
+# Check status
+sudo systemctl status deployflow
 
-# 5. Set permissions
-sudo chown -R 9999:root /data/deployflow
-sudo chmod -R 700 /data/deployflow
+# View logs
+sudo journalctl -u deployflow -f
 
-# 6. Generate secure values
-sudo sed -i "s|APP_ID=.*|APP_ID=$(openssl rand -hex 16)|g" .env
-sudo sed -i "s|APP_KEY=.*|APP_KEY=base64:$(openssl rand -base64 32)|g" .env
-sudo sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=$(openssl rand -base64 32)|g" .env
-sudo sed -i "s|REDIS_PASSWORD=.*|REDIS_PASSWORD=$(openssl rand -base64 32)|g" .env
-
-# 7. Create Docker network
-sudo docker network create --attachable deployflow
-
-# 8. Start DeployFlow.io
-sudo docker compose --env-file .env -f docker-compose.yml -f docker-compose.prod.yml up -d --pull always --remove-orphans --force-recreate
+# View Docker logs
+docker-compose -f /opt/deployflow/docker-compose.yml logs -f
 ```
 
-## 🌐 Access DeployFlow.io
-
-After installation, DeployFlow.io will be available at:
-
-```
-http://YOUR_SERVER_IP:8000
-```
-
-**Important**: Create your admin account immediately! The first user to register becomes the administrator.
-
-## 🔄 Upgrading DeployFlow.io
+## 🔄 **Upgrading DeployFlow.io**
 
 To upgrade to the latest version:
 
 ```bash
-sudo /data/deployflow/source/upgrade.sh
+curl -fsSL https://raw.githubusercontent.com/indiabitcoin/DeployFlow.io/main/upgrade.sh | sudo bash
 ```
 
-This will:
-- ✅ Create a backup
-- ✅ Download latest files
-- ✅ Pull latest images
-- ✅ Run database migrations
-- ✅ Clear caches
-- ✅ Restart services
+## 🛠️ **Manual Installation**
 
-## 🛠️ Management Commands
+If you prefer manual installation:
 
-### View Logs
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/indiabitcoin/DeployFlow.io.git
+   cd DeployFlow.io
+   ```
+
+2. **Run the installation script**:
+   ```bash
+   sudo bash install.sh
+   ```
+
+## 🔍 **Troubleshooting**
+
+### **Common Issues**
+
+1. **Permission Denied**: Make sure you're running as a non-root user with sudo privileges
+2. **Docker Installation Failed**: Check your internet connection and try again
+3. **Port Already in Use**: Make sure port 8000 is not already in use
+4. **Service Won't Start**: Check logs with `sudo journalctl -u deployflow -f`
+
+### **Logs and Debugging**
+
 ```bash
-# Application logs
+# Check systemd service logs
+sudo journalctl -u deployflow -f
+
+# Check Docker container logs
+docker-compose -f /opt/deployflow/docker-compose.yml logs -f
+
+# Check individual container logs
 docker logs deployflow-app
-
-# Database logs
 docker logs deployflow-db
-
-# Redis logs
 docker logs deployflow-redis
+docker logs deployflow-soketi
 ```
 
-### Restart Services
-```bash
-# Restart all services
-docker compose -f /data/deployflow/source/docker-compose.yml restart
+## 🌐 **Accessing DeployFlow.io**
 
-# Restart specific service
-docker restart deployflow-app
-```
+After successful installation:
 
-### Check Status
-```bash
-# Check running containers
-docker ps
+1. **Open your browser** and go to `http://localhost:8000`
+2. **Create your account** and set up your first project
+3. **Start deploying** your applications!
 
-# Check resource usage
-docker stats
-```
+## 📞 **Support**
 
-### Backup
-```bash
-# Manual backup
-sudo /data/deployflow/source/backup.sh
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-Key environment variables in `/data/deployflow/source/.env`:
-
-```bash
-# Application
-APP_NAME="DeployFlow.io"
-APP_URL=http://YOUR_SERVER_IP:8000
-
-# Database
-DB_PASSWORD=your_secure_password
-
-# Redis
-REDIS_PASSWORD=your_secure_password
-
-# Pusher (WebSocket)
-PUSHER_APP_ID=your_app_id
-PUSHER_APP_KEY=your_app_key
-PUSHER_APP_SECRET=your_app_secret
-```
-
-### Custom Domain
-
-To use a custom domain:
-
-1. Update `APP_URL` in `.env`
-2. Configure DNS to point to your server
-3. Set up SSL certificates
-4. Restart DeployFlow.io
-
-## 🚨 Troubleshooting
-
-### Common Issues
-
-#### Installation Fails
-- Ensure you're running as root or with sudo
-- Check internet connection
-- Verify system requirements
-
-#### Can't Access DeployFlow.io
-- Check if port 8000 is open
-- Verify containers are running: `docker ps`
-- Check logs: `docker logs deployflow-app`
-
-#### Database Connection Issues
-- Verify database container is running
-- Check database logs: `docker logs deployflow-db`
-- Ensure passwords match in `.env`
-
-#### Memory Issues
-- Increase server memory
-- Enable swap space
-- Monitor resource usage: `docker stats`
-
-### Getting Help
-
-- **GitHub Issues**: [Report bugs and request features](https://github.com/yourusername/DeployFlow.io/issues)
-- **Documentation**: [Full documentation](https://docs.deployflow.io)
-- **Community**: [Join our Discord](https://discord.gg/deployflow)
-
-## 🔒 Security Considerations
-
-### Firewall Configuration
-```bash
-# Allow SSH
-sudo ufw allow 22
-
-# Allow DeployFlow.io
-sudo ufw allow 8000
-
-# Enable firewall
-sudo ufw enable
-```
-
-### SSL/TLS Setup
-For production deployments, set up SSL certificates:
-
-```bash
-# Install Certbot
-sudo apt install certbot
-
-# Get certificate
-sudo certbot certonly --standalone -d your-domain.com
-
-# Update nginx configuration
-sudo nano /etc/nginx/sites-available/deployflow
-```
-
-### Regular Updates
-Keep DeployFlow.io updated:
-
-```bash
-# Check for updates
-sudo /data/deployflow/source/upgrade.sh
-
-# Or manually pull latest
-sudo docker compose -f /data/deployflow/source/docker-compose.yml pull
-sudo docker compose -f /data/deployflow/source/docker-compose.yml up -d
-```
-
-## 📊 Performance Optimization
-
-### Resource Monitoring
-```bash
-# Monitor resource usage
-docker stats
-
-# Check disk usage
-df -h
-
-# Check memory usage
-free -h
-```
-
-### Scaling
-For high-traffic deployments:
-- Use multiple servers
-- Set up load balancing
-- Configure Redis clustering
-- Use external database services
-
-## 🎯 Next Steps
-
-After installation:
-
-1. **Create Admin Account** - Register as the first user
-2. **Configure Servers** - Add your deployment servers
-3. **Create Projects** - Set up your first project
-4. **Build Flows** - Create your first deployment flow
-5. **Deploy Applications** - Start deploying your apps
+- **GitHub Issues**: [Report bugs and request features](https://github.com/indiabitcoin/DeployFlow.io/issues)
+- **Documentation**: [Full documentation](https://github.com/indiabitcoin/DeployFlow.io/wiki)
+- **Community**: [Discussions](https://github.com/indiabitcoin/DeployFlow.io/discussions)
 
 ---
 
