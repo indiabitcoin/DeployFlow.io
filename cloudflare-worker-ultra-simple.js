@@ -1,52 +1,80 @@
-#!/bin/bash
-# DeployFlow.io Installation Script - Root Version (Coolify Style)
+// DeployFlow.io CDN Worker - Ultra Simple Version
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const path = url.pathname;
+    
+    // CORS headers
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Cache-Control': 'public, max-age=3600'
+    };
+    
+    // Handle preflight requests
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { 
+        status: 204, 
+        headers: corsHeaders 
+      });
+    }
+    
+    // Ultra simple file mappings
+    const files = {
+      '/install.sh': `#!/bin/bash
 echo "DeployFlow.io Installation Script"
 echo "=================================="
 echo ""
-echo "This script installs DeployFlow.io with Docker."
-echo "Running as root for easier installation..."
+echo "This is a working installation script!"
+echo "It will install DeployFlow.io with Docker."
 echo ""
 echo "Starting installation..."
 
-# Detect OS
-if [[ -f /etc/os-release ]]; then
-    . /etc/os-release
-    OS=$NAME
-    VER=$VERSION_ID
-    echo "Detected OS: $OS $VER"
-else
-    echo "ERROR: Cannot detect OS"
+# Check if running as root
+if [[ $EUID -eq 0 ]]; then
+    echo "ERROR: This script should not be run as root"
+    echo "Please run as a regular user with sudo privileges"
     exit 1
 fi
 
-# Install Docker
+# Check sudo privileges
+if ! sudo -n true 2>/dev/null; then
+    echo "ERROR: This script requires sudo privileges"
+    exit 1
+fi
+
 echo "Installing Docker..."
-if command -v docker &> /dev/null; then
-    echo "Docker is already installed"
-else
-    case $OS in
-        "Ubuntu"|"Debian GNU/Linux")
-            apt-get update
-            apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-            apt-get update
-            apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-            ;;
-        "CentOS Linux"|"Red Hat Enterprise Linux")
-            yum install -y yum-utils
-            yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-            yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-            ;;
-        *)
-            echo "ERROR: Unsupported OS: $OS"
-            exit 1
-            ;;
-    esac
+
+# Detect OS and install Docker
+if [[ -f /etc/os-release ]]; then
+    . /etc/os-release
+    OS=$NAME
+    echo "Detected OS: $OS"
     
-    systemctl start docker
-    systemctl enable docker
+    if [[ "$OS" == "Ubuntu" ]] || [[ "$OS" == "Debian GNU/Linux" ]]; then
+        sudo apt-get update
+        sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt-get update
+        sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    elif [[ "$OS" == "CentOS Linux" ]] || [[ "$OS" == "Red Hat Enterprise Linux" ]]; then
+        sudo yum install -y yum-utils
+        sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+        sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    else
+        echo "ERROR: Unsupported OS: $OS"
+        exit 1
+    fi
+    
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    sudo usermod -aG docker $USER
     echo "Docker installed successfully"
+else
+    echo "ERROR: Cannot detect OS"
+    exit 1
 fi
 
 # Install Docker Compose
@@ -54,8 +82,8 @@ echo "Installing Docker Compose..."
 if command -v docker-compose &> /dev/null; then
     echo "Docker Compose is already installed"
 else
-    curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    chmod +x /usr/local/bin/docker-compose
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
     echo "Docker Compose installed successfully"
 fi
 
@@ -67,15 +95,15 @@ DEPLOYFLOW_DIR="/opt/deployflow"
 if id "$DEPLOYFLOW_USER" &>/dev/null; then
     echo "User $DEPLOYFLOW_USER already exists"
 else
-    useradd -r -s /bin/bash -d $DEPLOYFLOW_DIR -m $DEPLOYFLOW_USER
-    usermod -aG docker $DEPLOYFLOW_USER
+    sudo useradd -r -s /bin/bash -d $DEPLOYFLOW_DIR -m $DEPLOYFLOW_USER
+    sudo usermod -aG docker $DEPLOYFLOW_USER
     echo "User $DEPLOYFLOW_USER created"
 fi
 
 # Create directories
 echo "Creating directories..."
-mkdir -p $DEPLOYFLOW_DIR/{data,logs,config,ssl}
-chown -R $DEPLOYFLOW_USER:$DEPLOYFLOW_USER $DEPLOYFLOW_DIR
+sudo mkdir -p $DEPLOYFLOW_DIR/{data,logs,config,ssl}
+sudo chown -R $DEPLOYFLOW_USER:$DEPLOYFLOW_USER $DEPLOYFLOW_DIR
 echo "Directories created"
 
 # Generate secure values
@@ -88,7 +116,7 @@ echo "Secure values generated"
 
 # Create environment file
 echo "Creating environment configuration..."
-tee $DEPLOYFLOW_DIR/.env > /dev/null << 'EOF'
+sudo tee $DEPLOYFLOW_DIR/.env > /dev/null << 'EOF'
 APP_NAME="DeployFlow.io"
 APP_ENV=production
 APP_KEY=APP_KEY_PLACEHOLDER
@@ -132,35 +160,36 @@ VITE_PUSHER_SCHEME="https"
 VITE_PUSHER_APP_CLUSTER="mt1"
 EOF
 
-# Replace placeholders (escape special characters for sed)
-sed -i "s|APP_KEY_PLACEHOLDER|$APP_KEY|g" $DEPLOYFLOW_DIR/.env
-sed -i "s|DB_PASSWORD_PLACEHOLDER|$DB_PASSWORD|g" $DEPLOYFLOW_DIR/.env
-sed -i "s|REDIS_PASSWORD_PLACEHOLDER|$REDIS_PASSWORD|g" $DEPLOYFLOW_DIR/.env
-sed -i "s|PUSHER_APP_SECRET_PLACEHOLDER|$PUSHER_APP_SECRET|g" $DEPLOYFLOW_DIR/.env
+# Replace placeholders
+sudo sed -i "s/APP_KEY_PLACEHOLDER/$APP_KEY/g" $DEPLOYFLOW_DIR/.env
+sudo sed -i "s/DB_PASSWORD_PLACEHOLDER/$DB_PASSWORD/g" $DEPLOYFLOW_DIR/.env
+sudo sed -i "s/REDIS_PASSWORD_PLACEHOLDER/$REDIS_PASSWORD/g" $DEPLOYFLOW_DIR/.env
+sudo sed -i "s/PUSHER_APP_SECRET_PLACEHOLDER/$PUSHER_APP_SECRET/g" $DEPLOYFLOW_DIR/.env
 
-chown $DEPLOYFLOW_USER:$DEPLOYFLOW_USER $DEPLOYFLOW_DIR/.env
-chmod 600 $DEPLOYFLOW_DIR/.env
+sudo chown $DEPLOYFLOW_USER:$DEPLOYFLOW_USER $DEPLOYFLOW_DIR/.env
+sudo chmod 600 $DEPLOYFLOW_DIR/.env
 echo "Environment file created"
 
 # Create Docker Compose file
 echo "Creating Docker Compose configuration..."
-tee $DEPLOYFLOW_DIR/docker-compose.yml > /dev/null << 'EOF'
+sudo tee $DEPLOYFLOW_DIR/docker-compose.yml > /dev/null << 'EOF'
 version: '3.8'
 
 services:
   deployflow-app:
-    image: nginx:alpine
+    image: deployflow/deployflow:latest
     container_name: deployflow-app
     restart: unless-stopped
     ports:
-      - "8000:80"
+      - "8000:8000"
     environment:
       - APP_ENV=production
+    env_file:
+      - .env
     volumes:
       - ./data:/var/www/html/storage/app
       - ./logs:/var/www/html/storage/logs
       - ./config:/var/www/html/config
-      - ./public:/usr/share/nginx/html
     depends_on:
       - deployflow-db
       - deployflow-redis
@@ -217,12 +246,12 @@ networks:
     driver: bridge
 EOF
 
-chown $DEPLOYFLOW_USER:$DEPLOYFLOW_USER $DEPLOYFLOW_DIR/docker-compose.yml
+sudo chown $DEPLOYFLOW_USER:$DEPLOYFLOW_USER $DEPLOYFLOW_DIR/docker-compose.yml
 echo "Docker Compose file created"
 
 # Create systemd service
 echo "Creating systemd service..."
-tee /etc/systemd/system/deployflow.service > /dev/null << 'EOF'
+sudo tee /etc/systemd/system/deployflow.service > /dev/null << 'EOF'
 [Unit]
 Description=DeployFlow.io
 Requires=docker.service
@@ -242,23 +271,23 @@ TimeoutStartSec=0
 WantedBy=multi-user.target
 EOF
 
-systemctl daemon-reload
-systemctl enable deployflow.service
+sudo systemctl daemon-reload
+sudo systemctl enable deployflow.service
 echo "Systemd service created"
 
 # Start DeployFlow.io
 echo "Starting DeployFlow.io..."
-systemctl start deployflow.service
+sudo systemctl start deployflow.service
 
 # Wait for services to start
 sleep 30
 
 # Check if services are running
-if systemctl is-active --quiet deployflow.service; then
+if sudo systemctl is-active --quiet deployflow.service; then
     echo "DeployFlow.io started successfully"
 else
     echo "Failed to start DeployFlow.io"
-    systemctl status deployflow.service
+    sudo systemctl status deployflow.service
     exit 1
 fi
 
@@ -276,14 +305,36 @@ echo "⚙️  Environment: /opt/deployflow/.env"
 echo "🔧 Service: deployflow.service"
 echo ""
 echo "📋 Management Commands:"
-echo "  systemctl start deployflow    # Start DeployFlow.io"
-echo "  systemctl stop deployflow     # Stop DeployFlow.io"
-echo "  systemctl restart deployflow  # Restart DeployFlow.io"
-echo "  systemctl status deployflow   # Check status"
+echo "  sudo systemctl start deployflow    # Start DeployFlow.io"
+echo "  sudo systemctl stop deployflow     # Stop DeployFlow.io"
+echo "  sudo systemctl restart deployflow  # Restart DeployFlow.io"
+echo "  sudo systemctl status deployflow   # Check status"
 echo ""
 echo "📊 Logs:"
-echo "  journalctl -u deployflow -f   # View logs"
+echo "  sudo journalctl -u deployflow -f   # View logs"
 echo "  docker-compose -f /opt/deployflow/docker-compose.yml logs -f"
 echo ""
 echo "🎉 DeployFlow.io is ready to use!"
-echo ""
+echo ""`,
+
+      '/test.txt': `Hello from DeployFlow.io CDN!
+This is a test file to verify the Worker is working.`
+    };
+    
+    // Serve files
+    if (files[path]) {
+      return new Response(files[path], {
+        headers: {
+          'Content-Type': 'text/plain',
+          ...corsHeaders
+        }
+      });
+    }
+    
+    // Return 404 for unknown files
+    return new Response('File not found', { 
+      status: 404,
+      headers: corsHeaders
+    });
+  }
+}
