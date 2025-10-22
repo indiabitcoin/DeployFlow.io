@@ -154,15 +154,13 @@ version: '3.8'
 
 services:
   deployflow-app:
-    image: deployflow/deployflow:latest
+    image: nginx:alpine
     container_name: deployflow-app
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "8000:80"
     environment:
       - APP_ENV=production
-    env_file:
-      - .env
     volumes:
       - ./data:/var/www/html/storage/app
       - ./logs:/var/www/html/storage/logs
