@@ -1,0 +1,929 @@
+# DeployFlow.io CDN Upload Package
+
+## 📁 Files Ready for Upload
+
+All files are prepared in the `cdn-upload/` directory:
+
+### **Core Installation Files:**
+- **install.sh** (12.5KB) - Main installer script
+- **upgrade.sh** (5.4KB) - Upgrade script  
+- **docker-compose.prod.yml** (4.4KB) - Production Docker config
+- **env.production.template** (1.8KB) - Environment template
+
+### **Total Size:** ~24KB (very lightweight!)
+
+## 🚀 Upload Instructions
+
+### **Method 1: Cloudflare Pages (Recommended)**
+
+1. **Go to Cloudflare Dashboard:**
+   - Visit [dash.cloudflare.com](https://dash.cloudflare.com)
+   - Sign in to your account
+
+2. **Create Pages Project:**
+   - Navigate to "Workers & Pages" → "Pages"
+   - Click "Create a project"
+   - Choose "Upload assets"
+
+3. **Upload Files:**
+   - Drag and drop all 4 files from `cdn-upload/` folder
+   - Or click "Select from computer" and choose the files
+
+4. **Configure Project:**
+   - Project name: `deployflow-cdn`
+   - Click "Deploy"
+
+5. **Set Custom Domain:**
+   - Go to "Custom domains"
+   - Add domain: `cdn.deployflow.io`
+   - Cloudflare will automatically configure SSL
+
+### **Method 2: Cloudflare Workers**
+
+1. **Create Worker:**
+   - Go to "Workers & Pages" → "Workers"
+   - Click "Create application"
+   - Choose "Worker"
+   - Name: `deployflow-cdn`
+
+2. **Add Worker Code:**
+   ```javascript
+   export default {
+     async fetch(request, env, ctx) {
+       const url = new URL(request.url);
+       const path = url.pathname;
+       
+       // File content mappings
+       const files = {
+         '/install.sh': `#!/bin/bash
+# DeployFlow.io Single-Command Installer
+# Usage: curl -fsSL https://cdn.deployflow.io/install.sh | sudo bash
+
+set -e
+
+# Colors for output
+RED='\\033[0;31m'
+GREEN='\\033[0;32m'
+YELLOW='\\033[1;33m'
+BLUE='\\033[0;34m'
+PURPLE='\\033[0;35m'
+CYAN='\\033[0;36m'
+NC='\\033[0m' # No Color
+
+# DeployFlow.io branding
+DEPLOYFLOW_LOGO="
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║    ██████╗ ███████╗██████╗ ██╗     ██╗      ██████╗ ██╗    ██╗ ║
+║    ██╔══██╗██╔════╝██╔══██╗██║     ██║     ██╔═══██╗██║    ██║ ║
+║    ██║  ██║█████╗  ██████╔╝██║     ██║     ██║   ██║██║ █╗ ██║ ║
+║    ██║  ██║██╔══╝  ██╔═══╝ ██║     ██║     ██║   ██║██║███╗██║ ║
+║    ██████╔╝███████╗██║     ███████╗███████╗╚██████╔╝╚███╔███╔╝ ║
+║    ╚═════╝ ╚══════╝╚═╝     ╚══════╝╚══════╝ ╚═════╝  ╚══╝╚══╝  ║
+║                                                              ║
+║                    Where Deployments Flow Smoothly           ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+"
+
+print_logo() {
+    echo -e "${CYAN}${DEPLOYFLOW_LOGO}${NC}"
+}
+
+print_status() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+print_step() {
+    echo -e "${PURPLE}[STEP]${NC} $1"
+}
+
+# Function to check if command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Function to detect OS
+detect_os() {
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        OS=$NAME
+        VER=$VERSION_ID
+    elif type lsb_release >/dev/null 2>&1; then
+        OS=$(lsb_release -si)
+        VER=$(lsb_release -sr)
+    elif [ -f /etc/lsb-release ]; then
+        . /etc/lsb-release
+        OS=$DISTRIB_ID
+        VER=$DISTRIB_RELEASE
+    elif [ -f /etc/debian_version ]; then
+        OS=Debian
+        VER=$(cat /etc/debian_version)
+    elif [ -f /etc/SuSe-release ]; then
+        OS=SuSE
+    elif [ -f /etc/redhat-release ]; then
+        OS=RedHat
+    else
+        OS=$(uname -s)
+        VER=$(uname -r)
+    fi
+    
+    print_status "Detected OS: $OS $VER"
+}
+
+# Function to check system requirements
+check_requirements() {
+    print_step "Checking system requirements..."
+    
+    # Check if running as root
+    if [ "$EUID" -ne 0 ]; then
+        print_error "Please run as root or with sudo"
+        exit 1
+    fi
+    
+    # Check architecture
+    ARCH=$(uname -m)
+    if [[ "$ARCH" != "x86_64" && "$ARCH" != "aarch64" ]]; then
+        print_error "Unsupported architecture: $ARCH. Only x86_64 and aarch64 are supported."
+        exit 1
+    fi
+    
+    # Check memory
+    MEMORY=$(free -m | awk 'NR==2{printf "%.0f", $2}')
+    if [ "$MEMORY" -lt 2048 ]; then
+        print_warning "Low memory detected: ${MEMORY}MB. Minimum 2GB recommended."
+    fi
+    
+    # Check disk space
+    DISK_SPACE=$(df / | awk 'NR==2{printf "%.0f", $4}')
+    if [ "$DISK_SPACE" -lt 30720 ]; then
+        print_warning "Low disk space detected: ${DISK_SPACE}MB. Minimum 30GB recommended."
+    fi
+    
+    print_success "System requirements check completed"
+}
+
+# Function to install essential tools
+install_essentials() {
+    print_step "Installing essential tools..."
+    
+    # Update package lists
+    if command_exists apt-get; then
+        apt-get update
+        apt-get install -y curl wget git jq openssl ca-certificates gnupg lsb-release
+    elif command_exists yum; then
+        yum update -y
+        yum install -y curl wget git jq openssl ca-certificates gnupg
+    elif command_exists dnf; then
+        dnf update -y
+        dnf install -y curl wget git jq openssl ca-certificates gnupg
+    elif command_exists zypper; then
+        zypper refresh
+        zypper install -y curl wget git jq openssl ca-certificates gnupg
+    elif command_exists pacman; then
+        pacman -Syu --noconfirm curl wget git jq openssl ca-certificates gnupg
+    elif command_exists apk; then
+        apk update
+        apk add curl wget git jq openssl ca-certificates gnupg
+    else
+        print_error "Unsupported package manager"
+        exit 1
+    fi
+    
+    print_success "Essential tools installed"
+}
+
+# Function to install Docker
+install_docker() {
+    print_step "Installing Docker Engine..."
+    
+    if command_exists docker; then
+        print_warning "Docker already installed"
+        return
+    fi
+    
+    # Remove old Docker versions
+    if command_exists apt-get; then
+        apt-get remove -y docker docker-engine docker.io containerd runc || true
+    fi
+    
+    # Install Docker using official script
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sh get-docker.sh
+    rm get-docker.sh
+    
+    # Start and enable Docker
+    systemctl start docker
+    systemctl enable docker
+    
+    # Configure Docker
+    mkdir -p /etc/docker
+    cat > /etc/docker/daemon.json << EOF
+{
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "10m",
+        "max-file": "3"
+    },
+    "live-restore": true,
+    "userland-proxy": false,
+    "experimental": false,
+    "metrics-addr": "0.0.0.0:9323",
+    "default-address-pools": [
+        {
+            "base": "172.17.0.0/12",
+            "size": 24
+        }
+    ]
+}
+EOF
+    
+    systemctl restart docker
+    
+    print_success "Docker Engine installed and configured"
+}
+
+# Function to create DeployFlow.io directories
+create_directories() {
+    print_step "Creating DeployFlow.io directories..."
+    
+    mkdir -p /data/deployflow/{source,ssh,applications,databases,backups,services,proxy,webhooks-during-maintenance}
+    mkdir -p /data/deployflow/ssh/{keys,mux}
+    mkdir -p /data/deployflow/proxy/dynamic
+    
+    print_success "Directories created"
+}
+
+# Function to generate SSH key
+generate_ssh_key() {
+    print_step "Generating SSH key for DeployFlow.io..."
+    
+    ssh-keygen -f /data/deployflow/ssh/keys/deployflow@localhost -t ed25519 -N '' -C deployflow@localhost
+    
+    # Add public key to authorized_keys
+    cat /data/deployflow/ssh/keys/deployflow@localhost.pub >> ~/.ssh/authorized_keys
+    chmod 600 ~/.ssh/authorized_keys
+    
+    print_success "SSH key generated"
+}
+
+# Function to download DeployFlow.io files
+download_files() {
+    print_step "Downloading DeployFlow.io configuration files..."
+    
+    # Download Docker Compose files
+    curl -fsSL https://cdn.deployflow.io/docker-compose.prod.yml -o /data/deployflow/source/docker-compose.prod.yml
+    curl -fsSL https://cdn.deployflow.io/env.production.template -o /data/deployflow/source/.env
+    
+    # Download upgrade script
+    curl -fsSL https://cdn.deployflow.io/upgrade.sh -o /data/deployflow/source/upgrade.sh
+    chmod +x /data/deployflow/source/upgrade.sh
+    
+    print_success "Configuration files downloaded"
+}
+
+# Function to set permissions
+set_permissions() {
+    print_step "Setting permissions..."
+    
+    chown -R 9999:root /data/deployflow
+    chmod -R 700 /data/deployflow
+    
+    print_success "Permissions set"
+}
+
+# Function to generate secure values
+generate_values() {
+    print_step "Generating secure random values..."
+    
+    # Generate secure random values
+    APP_ID=$(openssl rand -hex 16)
+    APP_KEY="base64:$(openssl rand -base64 32)"
+    DB_PASSWORD=$(openssl rand -base64 32)
+    REDIS_PASSWORD=$(openssl rand -base64 32)
+    PUSHER_APP_ID=$(openssl rand -hex 32)
+    PUSHER_APP_KEY=$(openssl rand -hex 32)
+    PUSHER_APP_SECRET=$(openssl rand -hex 32)
+    
+    # Update .env file
+    sed -i "s|APP_ID=.*|APP_ID=$APP_ID|g" /data/deployflow/source/.env
+    sed -i "s|APP_KEY=.*|APP_KEY=$APP_KEY|g" /data/deployflow/source/.env
+    sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=$DB_PASSWORD|g" /data/deployflow/source/.env
+    sed -i "s|REDIS_PASSWORD=.*|REDIS_PASSWORD=$REDIS_PASSWORD|g" /data/deployflow/source/.env
+    sed -i "s|PUSHER_APP_ID=.*|PUSHER_APP_ID=$PUSHER_APP_ID|g" /data/deployflow/source/.env
+    sed -i "s|PUSHER_APP_KEY=.*|PUSHER_APP_KEY=$PUSHER_APP_KEY|g" /data/deployflow/source/.env
+    sed -i "s|PUSHER_APP_SECRET=.*|PUSHER_APP_SECRET=$PUSHER_APP_SECRET|g" /data/deployflow/source/.env
+    
+    print_success "Secure values generated"
+}
+
+# Function to create Docker network
+create_docker_network() {
+    print_step "Creating Docker network..."
+    
+    docker network create --attachable deployflow || true
+    
+    print_success "Docker network created"
+}
+
+# Function to start DeployFlow.io
+start_deployflow() {
+    print_step "Starting DeployFlow.io..."
+    
+    cd /data/deployflow/source
+    
+    # Start DeployFlow.io
+    docker compose --env-file .env -f docker-compose.prod.yml up -d --pull always --remove-orphans --force-recreate
+    
+    print_success "DeployFlow.io started"
+}
+
+# Function to show completion message
+show_completion() {
+    print_success "DeployFlow.io installation completed successfully!"
+    
+    # Get server IP
+    SERVER_IP=$(curl -s ifconfig.me || curl -s ipinfo.io/ip || hostname -I | awk '{print $1}')
+    
+    echo ""
+    echo -e "${GREEN}╔══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}║                    🎉 INSTALLATION COMPLETE! 🎉              ║${NC}"
+    echo -e "${GREEN}╚══════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo -e "${CYAN}DeployFlow.io is now running on:${NC}"
+    echo -e "${YELLOW}  🌐 http://$SERVER_IP:8000${NC}"
+    echo ""
+    echo -e "${CYAN}Next steps:${NC}"
+    echo -e "${YELLOW}  1. Visit the URL above to access DeployFlow.io${NC}"
+    echo -e "${YELLOW}  2. Create your admin account${NC}"
+    echo -e "${YELLOW}  3. Start building your deployment flows!${NC}"
+    echo ""
+    echo -e "${PURPLE}Important:${NC}"
+    echo -e "${RED}  ⚠️  Create your admin account immediately!${NC}"
+    echo -e "${RED}  ⚠️  Anyone who accesses the registration page first becomes admin${NC}"
+    echo ""
+    echo -e "${CYAN}Useful commands:${NC}"
+    echo -e "${YELLOW}  • View logs: docker logs deployflow-app${NC}"
+    echo -e "${YELLOW}  • Restart: docker compose -f /data/deployflow/source/docker-compose.prod.yml restart${NC}"
+    echo -e "${YELLOW}  • Upgrade: /data/deployflow/source/upgrade.sh${NC}"
+    echo ""
+}
+
+# Function to handle errors
+handle_error() {
+    print_error "Installation failed at step: $1"
+    print_error "Please check the logs above for details"
+    print_error "For support, visit: https://github.com/indiabitcoin/DeployFlow.io/issues"
+    exit 1
+}
+
+# Main installation function
+main() {
+    # Set error handling
+    trap 'handle_error "Unknown"' ERR
+    
+    # Show logo
+    print_logo
+    
+    print_status "Starting DeployFlow.io installation..."
+    print_status "This may take a few minutes depending on your internet connection"
+    echo ""
+    
+    # Run installation steps
+    detect_os
+    check_requirements
+    install_essentials
+    install_docker
+    create_directories
+    generate_ssh_key
+    download_files
+    set_permissions
+    generate_values
+    create_docker_network
+    start_deployflow
+    
+    # Show completion message
+    show_completion
+}
+
+# Run main function
+main "$@"
+`,
+        '/upgrade.sh': `#!/bin/bash
+# DeployFlow.io Upgrade Script
+# Usage: ./upgrade.sh
+
+set -e
+
+# Colors for output
+RED='\\033[0;31m'
+GREEN='\\033[0;32m'
+YELLOW='\\033[1;33m'
+BLUE='\\033[0;34m'
+NC='\\033[0m' # No Color
+
+print_status() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Function to check if running as root
+check_root() {
+    if [ "$EUID" -ne 0 ]; then
+        print_error "Please run as root or with sudo"
+        exit 1
+    fi
+}
+
+# Function to backup current installation
+backup_installation() {
+    print_status "Creating backup..."
+    
+    BACKUP_DIR="/data/deployflow/backups/$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$BACKUP_DIR"
+    
+    # Backup database
+    docker exec deployflow-db pg_dump -U deployflow deployflow > "$BACKUP_DIR/database.sql"
+    
+    # Backup volumes
+    cp -r /data/deployflow/applications "$BACKUP_DIR/" || true
+    cp -r /data/deployflow/databases "$BACKUP_DIR/" || true
+    cp -r /data/deployflow/services "$BACKUP_DIR/" || true
+    cp -r /data/deployflow/ssh "$BACKUP_DIR/" || true
+    
+    print_success "Backup created at: $BACKUP_DIR"
+}
+
+# Function to download latest files
+download_latest() {
+    print_status "Downloading latest DeployFlow.io files..."
+    
+    cd /data/deployflow/source
+    
+    # Download latest Docker Compose files
+    curl -fsSL https://cdn.deployflow.io/docker-compose.prod.yml -o docker-compose.prod.yml
+    
+    print_success "Latest files downloaded"
+}
+
+# Function to pull latest images
+pull_images() {
+    print_status "Pulling latest Docker images..."
+    
+    cd /data/deployflow/source
+    
+    docker compose --env-file .env -f docker-compose.prod.yml pull
+    
+    print_success "Latest images pulled"
+}
+
+# Function to upgrade DeployFlow.io
+upgrade_deployflow() {
+    print_status "Upgrading DeployFlow.io..."
+    
+    cd /data/deployflow/source
+    
+    # Stop current containers
+    docker compose --env-file .env -f docker-compose.prod.yml down
+    
+    # Start with latest images
+    docker compose --env-file .env -f docker-compose.prod.yml up -d --pull always --remove-orphans --force-recreate
+    
+    print_success "DeployFlow.io upgraded"
+}
+
+# Function to run migrations
+run_migrations() {
+    print_status "Running database migrations..."
+    
+    docker exec deployflow-app php artisan migrate --force
+    
+    print_success "Migrations completed"
+}
+
+# Function to clear caches
+clear_caches() {
+    print_status "Clearing application caches..."
+    
+    docker exec deployflow-app php artisan config:cache
+    docker exec deployflow-app php artisan route:cache
+    docker exec deployflow-app php artisan view:cache
+    
+    print_success "Caches cleared"
+}
+
+# Function to restart services
+restart_services() {
+    print_status "Restarting services..."
+    
+    docker restart deployflow-worker
+    
+    print_success "Services restarted"
+}
+
+# Function to verify installation
+verify_installation() {
+    print_status "Verifying installation..."
+    
+    # Check if containers are running
+    if ! docker ps | grep -q deployflow-app; then
+        print_error "DeployFlow.io app container is not running"
+        return 1
+    fi
+    
+    if ! docker ps | grep -q deployflow-db; then
+        print_error "DeployFlow.io database container is not running"
+        return 1
+    fi
+    
+    if ! docker ps | grep -q deployflow-redis; then
+        print_error "DeployFlow.io Redis container is not running"
+        return 1
+    fi
+    
+    # Check if application is responding
+    sleep 10
+    if ! curl -f http://localhost:8000 >/dev/null 2>&1; then
+        print_warning "Application may not be fully ready yet"
+    fi
+    
+    print_success "Installation verified"
+}
+
+# Function to show completion message
+show_completion() {
+    print_success "DeployFlow.io upgrade completed successfully!"
+    
+    echo ""
+    echo -e "${GREEN}╔══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}║                    🎉 UPGRADE COMPLETE! 🎉                  ║${NC}"
+    echo -e "${GREEN}╚══════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo -e "${CYAN}DeployFlow.io is now running the latest version!${NC}"
+    echo ""
+    echo -e "${CYAN}Useful commands:${NC}"
+    echo -e "${YELLOW}  • View logs: docker logs deployflow-app${NC}"
+    echo -e "${YELLOW}  • Check status: docker ps${NC}"
+    echo -e "${YELLOW}  • Restart: docker compose -f /data/deployflow/source/docker-compose.prod.yml restart${NC}"
+    echo ""
+}
+
+# Main upgrade function
+main() {
+    print_status "Starting DeployFlow.io upgrade..."
+    
+    check_root
+    backup_installation
+    download_latest
+    pull_images
+    upgrade_deployflow
+    run_migrations
+    clear_caches
+    restart_services
+    verify_installation
+    show_completion
+}
+
+# Run main function
+main "$@"
+`,
+        '/docker-compose.prod.yml': `version: '3.8'
+
+services:
+  deployflow-app:
+    image: deployflow/deployflow:latest
+    container_name: deployflow-app
+    restart: unless-stopped
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=http://localhost:8000
+      - DB_CONNECTION=pgsql
+      - DB_HOST=deployflow-db
+      - DB_PORT=5432
+      - DB_DATABASE=deployflow
+      - DB_USERNAME=deployflow
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=deployflow-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - QUEUE_CONNECTION=redis
+      - BROADCAST_DRIVER=redis
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - PUSHER_APP_ID=${PUSHER_APP_ID}
+      - PUSHER_APP_KEY=${PUSHER_APP_KEY}
+      - PUSHER_APP_SECRET=${PUSHER_APP_SECRET}
+      - PUSHER_HOST=deployflow-soketi
+      - PUSHER_PORT=6001
+      - PUSHER_SCHEME=http
+      - PUSHER_APP_CLUSTER=mt1
+    volumes:
+      - /data/deployflow/applications:/app/storage/applications
+      - /data/deployflow/databases:/app/storage/databases
+      - /data/deployflow/backups:/app/storage/backups
+      - /data/deployflow/services:/app/storage/services
+      - /data/deployflow/ssh:/app/storage/ssh
+      - /data/deployflow/proxy:/app/storage/proxy
+      - /data/deployflow/webhooks-during-maintenance:/app/storage/webhooks-during-maintenance
+    networks:
+      - deployflow
+    depends_on:
+      - deployflow-db
+      - deployflow-redis
+      - deployflow-soketi
+    ports:
+      - "8000:80"
+
+  deployflow-db:
+    image: postgres:15-alpine
+    container_name: deployflow-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=deployflow
+      - POSTGRES_USER=deployflow
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - deployflow-db-data:/var/lib/postgresql/data
+    networks:
+      - deployflow
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U deployflow -d deployflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  deployflow-redis:
+    image: redis:7-alpine
+    container_name: deployflow-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - deployflow-redis-data:/data
+    networks:
+      - deployflow
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  deployflow-soketi:
+    image: soketi/soketi:1.0-16-alpine
+    container_name: deployflow-soketi
+    restart: unless-stopped
+    environment:
+      - SOKETI_DEBUG=0
+      - SOKETI_DEFAULT_APP_ID=${PUSHER_APP_ID}
+      - SOKETI_DEFAULT_APP_KEY=${PUSHER_APP_KEY}
+      - SOKETI_DEFAULT_APP_SECRET=${PUSHER_APP_SECRET}
+      - SOKETI_DB_REDIS_HOST=deployflow-redis
+      - SOKETI_DB_REDIS_PORT=6379
+      - SOKETI_DB_REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      - deployflow
+    depends_on:
+      - deployflow-redis
+    ports:
+      - "6001:6001"
+
+  deployflow-worker:
+    image: deployflow/deployflow:latest
+    container_name: deployflow-worker
+    restart: unless-stopped
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=http://localhost:8000
+      - DB_CONNECTION=pgsql
+      - DB_HOST=deployflow-db
+      - DB_PORT=5432
+      - DB_DATABASE=deployflow
+      - DB_USERNAME=deployflow
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=deployflow-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - QUEUE_CONNECTION=redis
+      - PUSHER_APP_ID=${PUSHER_APP_ID}
+      - PUSHER_APP_KEY=${PUSHER_APP_KEY}
+      - PUSHER_APP_SECRET=${PUSHER_APP_SECRET}
+      - PUSHER_HOST=deployflow-soketi
+      - PUSHER_PORT=6001
+      - PUSHER_SCHEME=http
+      - PUSHER_APP_CLUSTER=mt1
+    volumes:
+      - /data/deployflow/applications:/app/storage/applications
+      - /data/deployflow/databases:/app/storage/databases
+      - /data/deployflow/backups:/app/storage/backups
+      - /data/deployflow/services:/app/storage/services
+      - /data/deployflow/ssh:/app/storage/ssh
+      - /data/deployflow/proxy:/app/storage/proxy
+      - /data/deployflow/webhooks-during-maintenance:/app/storage/webhooks-during-maintenance
+    networks:
+      - deployflow
+    depends_on:
+      - deployflow-db
+      - deployflow-redis
+      - deployflow-soketi
+    command: php artisan queue:work --verbose --tries=3 --timeout=90
+
+volumes:
+  deployflow-db-data:
+  deployflow-redis-data:
+
+networks:
+  deployflow:
+    external: true
+`,
+        '/env.production.template': `APP_NAME="DeployFlow.io"
+APP_ENV=production
+APP_KEY=
+APP_DEBUG=false
+APP_URL=http://localhost:8000
+
+LOG_CHANNEL=stack
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=error
+
+DB_CONNECTION=pgsql
+DB_HOST=deployflow-db
+DB_PORT=5432
+DB_DATABASE=deployflow
+DB_USERNAME=deployflow
+DB_PASSWORD=
+
+BROADCAST_DRIVER=redis
+CACHE_DRIVER=redis
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=redis
+SESSION_DRIVER=redis
+SESSION_LIFETIME=120
+
+MEMCACHED_HOST=127.0.0.1
+
+REDIS_HOST=deployflow-redis
+REDIS_PASSWORD=
+REDIS_PORT=6379
+
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="hello@deployflow.io"
+MAIL_FROM_NAME="${APP_NAME}"
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+AWS_USE_PATH_STYLE_ENDPOINT=false
+
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_HOST=deployflow-soketi
+PUSHER_PORT=6001
+PUSHER_SCHEME=http
+PUSHER_APP_CLUSTER=mt1
+
+VITE_APP_NAME="${APP_NAME}"
+VITE_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+VITE_PUSHER_HOST="${PUSHER_HOST}"
+VITE_PUSHER_PORT="${PUSHER_PORT}"
+VITE_PUSHER_SCHEME="${PUSHER_SCHEME}"
+VITE_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+
+# DeployFlow.io Specific Settings
+DEPLOYFLOW_BRANDING_NAME="DeployFlow.io"
+DEPLOYFLOW_BRANDING_TAGLINE="Where Deployments Flow Smoothly"
+DEPLOYFLOW_FEATURES_VISUAL_FLOW_BUILDER=true
+DEPLOYFLOW_FEATURES_FLOW_ANALYTICS=true
+DEPLOYFLOW_FEATURES_SMART_SUGGESTIONS=true
+DEPLOYFLOW_FEATURES_FLOW_TEMPLATES=true
+DEPLOYFLOW_FEATURES_REAL_TIME_MONITORING=true
+
+# Security Settings
+SESSION_SECURE_COOKIE=false
+SANCTUM_STATEFUL_DOMAINS=localhost,127.0.0.1
+SESSION_DOMAIN=
+
+# Performance Settings
+OPCACHE_ENABLE=1
+OPCACHE_MEMORY_CONSUMPTION=128
+OPCACHE_INTERNED_STRINGS_BUFFER=8
+OPCACHE_MAX_ACCELERATED_FILES=4000
+OPCACHE_REVALIDATE_FREQ=2
+OPCACHE_FAST_SHUTDOWN=1
+`
+      };
+      
+      if (files[path]) {
+        return new Response(files[path], {
+          headers: {
+            'Content-Type': 'text/plain',
+            'Cache-Control': 'public, max-age=3600'
+          }
+        });
+      }
+      
+      return new Response('File not found', { status: 404 });
+    }
+  }
+   ```
+
+3. **Deploy Worker:**
+   - Click "Deploy"
+   - Go to "Settings" → "Triggers"
+   - Add custom domain: `cdn.deployflow.io`
+
+### **Method 3: GitHub Pages (Alternative)**
+
+1. **Create Repository:**
+   - Create new repo: `deployflow-cdn`
+   - Enable GitHub Pages
+   - Set source: main branch
+
+2. **Upload Files:**
+   - Upload all 4 files to repository root
+   - Files accessible at: `https://yourusername.github.io/deployflow-cdn/install.sh`
+
+3. **Custom Domain:**
+   - Add CNAME file: `cdn.deployflow.io`
+   - Configure DNS to point to GitHub Pages
+
+## 🧪 Testing Your CDN
+
+### **Test File Access:**
+```bash
+# Test individual files
+curl -I https://cdn.deployflow.io/install.sh
+curl -I https://cdn.deployflow.io/upgrade.sh
+curl -I https://cdn.deployflow.io/docker-compose.prod.yml
+curl -I https://cdn.deployflow.io/env.production.template
+```
+
+### **Test Installation:**
+```bash
+# Test full installation
+curl -fsSL https://cdn.deployflow.io/install.sh | sudo bash
+```
+
+## 📊 Expected Results
+
+### **Successful Response:**
+```bash
+HTTP/2 200
+content-type: text/plain
+cache-control: public, max-age=3600
+content-length: 12476
+```
+
+### **Installation Success:**
+```bash
+╔══════════════════════════════════════════════════════════════╗
+║                    🎉 INSTALLATION COMPLETE! 🎉              ║
+╚══════════════════════════════════════════════════════════════╝
+
+DeployFlow.io is now running on:
+  🌐 http://YOUR_SERVER_IP:8000
+```
+
+## 🎯 Next Steps After Upload
+
+1. **Test CDN** - Verify all files are accessible
+2. **Test Installation** - Try the installation command
+3. **Monitor Performance** - Check download speeds
+4. **Update Documentation** - Update installation guides
+5. **Share with Community** - Let users know about DeployFlow.io!
+
+## 🚀 Ready to Upload!
+
+All files are prepared in the `cdn-upload/` directory. Choose your preferred method and upload them to make DeployFlow.io installation as smooth as Coolify's!
+
+**Total upload size: ~24KB (very lightweight!)**
