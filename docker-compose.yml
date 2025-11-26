@@ -1,37 +1,37 @@
 services:
-    coolify:
-        container_name: coolify
+    deployflow:
+        container_name: deployflow
         restart: always
         working_dir: /var/www/html
         extra_hosts:
             - host.docker.internal:host-gateway
         networks:
-            - coolify
+            - deployflow
         depends_on:
             - postgres
             - redis
             - soketi
     postgres:
         image: postgres:15-alpine
-        container_name: coolify-db
+        container_name: deployflow-db
         restart: always
         networks:
-            - coolify
+            - deployflow
     redis:
         image: redis:7-alpine
         container_name: deployflow-redis
         restart: always
         networks:
-            - coolify
+            - deployflow
     soketi:
         container_name: deployflow-realtime
         extra_hosts:
             - host.docker.internal:host-gateway
         restart: always
         networks:
-            - coolify
+            - deployflow
 networks:
-    coolify:
-        name: coolify
+    deployflow:
+        name: deployflow
         driver: bridge
         external: false
