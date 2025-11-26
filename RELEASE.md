@@ -1,6 +1,6 @@
-# Coolify Release Guide
+# DeployFlow.io Release Guide
 
-This guide outlines the release process for Coolify, intended for developers and those interested in understanding how Coolify releases are managed and deployed.
+This guide outlines the release process for DeployFlow.io, intended for developers and those interested in understanding how DeployFlow.io releases are managed and deployed.
 
 ## Table of Contents
 - [Release Process](#release-process)
@@ -28,7 +28,7 @@ This guide outlines the release process for Coolify, intended for developers and
    - A new GitHub release is manually created with details of the changes made in the version.
 
 5. **Updating the CDN**
-   - To make a new version publicly available, the version information on the CDN needs to be updated manually. After that the new version number will be available at [https://cdn.coollabs.io/coolify/versions.json](https://cdn.coollabs.io/coolify/versions.json).
+   - To make a new version publicly available, the version information on the CDN needs to be updated manually. After that the new version number will be available at [https://cdn.coollabs.io/DeployFlow/versions.json](https://cdn.coollabs.io/DeployFlow/versions.json).
 
 > [!NOTE]
 > The CDN update may not occur immediately after the GitHub release. It can take hours or even days due to additional testing, stability checks, or potential hotfixes. **The update becomes available only after the CDN is updated. After the CDN is updated, a discord announcement will be made in the Production Release channel.**
@@ -45,7 +45,7 @@ This guide outlines the release process for Coolify, intended for developers and
   - **Versioning Scheme:** Follows semantic versioning (e.g., `v4.0.0`, `4.1.0`, etc.).
   - **Installation Command:**
     ```bash
-    curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
+    curl -fsSL https://cdn.coollabs.io/DeployFlow/install.sh | bash
     ```
 
 </details>
@@ -60,7 +60,7 @@ This guide outlines the release process for Coolify, intended for developers and
   - **Versioning Scheme:** Follows semantic versioning (e.g., `4.1.0-nightly.1`, `4.1.0-nightly.2`, etc.).
   - **Installation Command:**
     ```bash
-    curl -fsSL https://cdn.coollabs.io/coolify-nightly/install.sh | bash -s next
+    curl -fsSL https://cdn.coollabs.io/DeployFlow-nightly/install.sh | bash -s next
     ```
 
 </details>
@@ -76,7 +76,7 @@ This guide outlines the release process for Coolify, intended for developers and
   - **Versioning Scheme:** Follows semantic versioning (e.g., `4.1.0-beta.1`, `4.1.0-beta.2`, etc.).
   - **Installation Command:**
   ```bash
-    curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
+    curl -fsSL https://cdn.coollabs.io/DeployFlow/install.sh | bash
   ```
 
 </details>
@@ -101,7 +101,7 @@ When a new version is released and a new GitHub release is created, it doesn't i
   3. **Re-run Installation Script:**
      - Run the installation script again to upgrade to the latest version available on the CDN:
      ```bash
-     curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
+     curl -fsSL https://cdn.coollabs.io/DeployFlow/install.sh | bash
      ```
 
 > [!IMPORTANT]
@@ -115,7 +115,7 @@ When a new version is released and a new GitHub release is created, it doesn't i
   - Updates are managed by Andras, who ensures each cloud version is thoroughly tested and stable before releasing it.
 
 > [!IMPORTANT]
-> The cloud version of Coolify may be several versions behind the latest GitHub releases even if the CDN is updated. This is intentional to ensure stability and reliability for cloud users and Andras will manully update the cloud version when the update is ready.
+> The cloud version of DeployFlow.io may be several versions behind the latest GitHub releases even if the CDN is updated. This is intentional to ensure stability and reliability for cloud users and Andras will manully update the cloud version when the update is ready.
 
 ## Manually Update/ Downgrade to Specific Versions
 
@@ -125,9 +125,9 @@ When a new version is released and a new GitHub release is created, it doesn't i
 > [!IMPORTANT]
 > Downgrading is supported but not recommended and can cause issues because of database migrations and other changes.
 
-To update your Coolify instance to a specific version, use the following command:
+To update your DeployFlow.io instance to a specific version, use the following command:
 
 ```bash
-curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash -s <version>
+curl -fsSL https://cdn.coollabs.io/DeployFlow/install.sh | bash -s <version>
 ```
 Replace `<version>` with the version you want to update to (for example `4.0.0-beta.332`).

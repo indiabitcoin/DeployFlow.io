@@ -1,4 +1,4 @@
-# Coolify Technology Stack
+# DeployFlow.io Technology Stack
 
 ## Frontend
 
