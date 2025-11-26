@@ -12,7 +12,10 @@ $email = getOldOrLocal('email', 'test3@example.com');
     <section class="bg-gray-50 dark:bg-base">
         <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
             <div class="w-full max-w-md space-y-8">
-                <div class="text-center space-y-2">
+                <div class="text-center space-y-4">
+                    <div class="flex justify-center mb-4">
+                        <img src="{{ asset('deployflow-logo.png') }}" alt="{{ config('app.name') }}" class="h-16 w-auto">
+                    </div>
                     <h1 class="!text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">
                         {{ config('app.name') }}
                     </h1>

@@ -79,7 +79,10 @@
     }">
     <div class="flex lg:pt-6 pt-4 pb-4 pl-2">
         <div class="flex flex-col w-full">
-            <a href="/" class="text-2xl font-bold tracking-wide dark:text-white hover:opacity-80 transition-opacity">{{ config('app.name') }}</a>
+            <a href="/" class="flex items-center gap-2 text-2xl font-bold tracking-wide dark:text-white hover:opacity-80 transition-opacity">
+                <img src="{{ asset('deployflow-logo.png') }}" alt="{{ config('app.name') }}" class="h-8 w-auto">
+                <span>{{ config('app.name') }}</span>
+            </a>
             <x-version />
         </div>
         <div>
