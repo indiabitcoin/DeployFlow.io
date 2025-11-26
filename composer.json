@@ -1,14 +1,15 @@
 {
-    "name": "coollabsio/coolify",
-    "description": "The Coolify project.",
+    "name": "indiabitcoin/deployflow",
+    "description": "DeployFlow.io - An open-source & self-hostable Heroku / Netlify / Vercel alternative.",
     "license": "Apache-2.0",
     "type": "project",
     "keywords": [
-        "coolify",
+        "deployflow",
         "deployment",
         "docker",
         "self-hosted",
-        "server"
+        "server",
+        "devops"
     ],
     "require": {
         "php": "^8.4",

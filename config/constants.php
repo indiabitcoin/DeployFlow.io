@@ -12,18 +12,18 @@ return [
         'helper_image' => env('HELPER_IMAGE', env('REGISTRY_URL', 'ghcr.io').'/coollabsio/coolify-helper'),
         'realtime_image' => env('REALTIME_IMAGE', env('REGISTRY_URL', 'ghcr.io').'/coollabsio/deployflow-realtime'),
         'is_windows_docker_desktop' => env('IS_WINDOWS_DOCKER_DESKTOP', false),
-        'releases_url' => 'https://cdn.coolify.io/releases.json',
+        'releases_url' => 'https://cdn.deployflow.io/deployflow/releases.json',
     ],
 
     'urls' => [
-        'docs' => 'https://coolify.io/docs',
-        'contact' => 'https://coolify.io/docs/contact',
+        'docs' => 'https://deployflow.io/docs',
+        'contact' => 'https://deployflow.io/docs/contact',
     ],
 
     'services' => [
         // Temporary disabled until cache is implemented
-        // 'official' => 'https://cdn.coollabs.io/coolify/service-templates.json',
-        'official' => 'https://raw.githubusercontent.com/coollabsio/coolify/v4.x/templates/service-templates-latest.json',
+        // 'official' => 'https://cdn.deployflow.io/deployflow/service-templates.json',
+        'official' => 'https://raw.githubusercontent.com/indiabitcoin/DeployFlow.io/main/coolify/templates/service-templates-latest.json',
         'file_name' => 'service-templates-latest.json',
     ],
 
