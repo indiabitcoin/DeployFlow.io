@@ -20,7 +20,7 @@
                         <div class="flex gap-2 md:flex-row flex-col w-full">
                             <x-forms.input canGate="update" :canResource="$settings" id="fqdn" label="Domain"
                                 helper="Enter the full domain name (FQDN) of the instance, including 'https://' if you want to secure the dashboard with HTTPS. Setting this will make the dashboard accessible via this domain, secured by HTTPS, instead of just the IP address."
-                                placeholder="https://coolify.yourdomain.com" />
+                                placeholder="https://deployflow.yourdomain.com" />
                             <x-forms.input canGate="update" :canResource="$settings" id="instance_name" label="Name" placeholder="DeployFlow"
                                 helper="Custom name for your DeployFlow instance, shown in the URL." />
                             <div class="w-full" x-data="{
@@ -87,7 +87,7 @@
                         @endif
                         @if(isDev())
                             <x-forms.input canGate="update" :canResource="$settings" id="dev_helper_version" label="Dev Helper Version (Development Only)"
-                                helper="Override the default coolify-helper image version. Leave empty to use the default version from config ({{ config('constants.deployflow.helper_version') }}). Examples: 1.0.11, latest, dev"
+                                helper="Override the default deployflow-helper image version. Leave empty to use the default version from config ({{ config('constants.deployflow.helper_version') }}). Examples: 1.0.11, latest, dev"
                                 placeholder="{{ config('constants.deployflow.helper_version') }}" />
                         @endif
                 </div>
