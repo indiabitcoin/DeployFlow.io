@@ -55,7 +55,7 @@
                                 @if (!isDatabaseImage(data_get($service, 'image')))
                                     <div class="flex items-end gap-2">
                                         <x-forms.input
-                                            helper="You can specify one domain with path or more with comma. You can specify a port to bind the domain to.<br><br><span class='text-helper'>Example</span><br>- http://app.deployflow.io,https://cloud.coolify.io/dashboard<br>- http://app.deployflow.io/api/v3<br>- http://app.deployflow.io:3000 -> app.deployflow.io will point to port 3000 inside the container. "
+                                            helper="You can specify one domain with path or more with comma. You can specify a port to bind the domain to.<br><br><span class='text-helper'>Example</span><br>- http://app.deployflow.io,https://cloud.deployflow.io/dashboard<br>- http://app.deployflow.io/api/v3<br>- http://app.deployflow.io:3000 -> app.deployflow.io will point to port 3000 inside the container. "
                                             label="Domains for {{ $serviceName }}"
                                             id="parsedServiceDomains.{{ str($serviceName)->replace('-', '_')->replace('.', '_') }}.domain"
                                             x-bind:disabled="shouldDisable()"></x-forms.input>
