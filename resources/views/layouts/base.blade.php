@@ -19,16 +19,16 @@
     <meta name="Description" content="{{ config('app.name') }}: An open-source & self-hostable Heroku / Netlify / Vercel alternative" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@coolifyio" />
+    <meta name="twitter:site" content="@deployflowio" />
     <meta name="twitter:title" content="{{ config('app.name') }}" />
     <meta name="twitter:description" content="An open-source & self-hostable Heroku / Netlify / Vercel alternative." />
-    <meta name="twitter:image" content="https://cdn.coollabs.io/assets/coolify/og-image.png" />
+    <meta name="twitter:image" content="https://cdn.deployflow.io/assets/deployflow/og-image.png" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://deployflow.io" />
     <meta property="og:title" content="{{ config('app.name') }}" />
     <meta property="og:description" content="An open-source & self-hostable Heroku / Netlify / Vercel alternative." />
     <meta property="og:site_name" content="{{ config('app.name') }}" />
-    <meta property="og:image" content="https://cdn.coollabs.io/assets/coolify/og-image.png" />
+    <meta property="og:image" content="https://cdn.deployflow.io/assets/deployflow/og-image.png" />
     @use('App\Models\InstanceSettings')
     @php
 
@@ -45,9 +45,9 @@
     @endphp
     <title>{{ $name }}{{ $title ?? config('app.name') }}</title>
     @env('local')
-        <link rel="icon" href="{{ asset('coolify-logo-dev-transparent.png') }}" type="image/png" />
+        <link rel="icon" href="{{ asset('deployflow-logo-dev-transparent.png') }}" type="image/png" />
     @else
-        <link rel="icon" href="{{ asset('coolify-logo.svg') }}" type="image/svg+xml" />
+        <link rel="icon" href="{{ asset('deployflow-logo.png') }}" type="image/png" />
     @endenv
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite(['resources/js/app.js', 'resources/css/app.css'])
