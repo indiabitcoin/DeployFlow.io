@@ -358,7 +358,7 @@
                         </a>
                     </li> --}}
                     <li>
-                        <a title="Sponsor us" class="menu-item" href="https://coolify.io/sponsorships"
+                        <a title="Sponsor us" class="menu-item" href="https://deployflow.io/sponsorships"
                             target="_blank">
                             <svg class="text-pink-500 icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <g fill="none" stroke="currentColor" stroke-linecap="round"

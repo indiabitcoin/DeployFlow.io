@@ -40,7 +40,7 @@
                         <li>Mount this CA certificate of DeployFlow into all containers that need to connect to one of
                             your databases over SSL. You can see and copy the bind mount below.</li>
                         <li>Read more when and why this is needed <a class="underline dark:text-white"
-                                href="https://coolify.io/docs/databases/ssl" target="_blank">here</a>.</li>
+                                href="https://deployflow.io/docs/databases/ssl" target="_blank">here</a>.</li>
                     </ul>
                 </div>
                 <div class="relative">

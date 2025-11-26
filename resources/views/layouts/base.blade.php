@@ -24,7 +24,7 @@
     <meta name="twitter:description" content="An open-source & self-hostable Heroku / Netlify / Vercel alternative." />
     <meta name="twitter:image" content="https://cdn.coollabs.io/assets/coolify/og-image.png" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://coolify.io" />
+    <meta property="og:url" content="https://deployflow.io" />
     <meta property="og:title" content="{{ config('app.name') }}" />
     <meta property="og:description" content="An open-source & self-hostable Heroku / Netlify / Vercel alternative." />
     <meta property="og:site_name" content="{{ config('app.name') }}" />
@@ -63,7 +63,7 @@
         }
     </style>
     @if (config('app.name') == 'DeployFlow Cloud')
-        <script defer data-domain="app.coolify.io" src="https://analytics.coollabs.io/js/plausible.js"></script>
+        <script defer data-domain="app.deployflow.io" src="https://analytics.coollabs.io/js/plausible.js"></script>
         <script src="https://js.sentry-cdn.com/0f8593910512b5cdd48c6da78d4093be.min.js" crossorigin="anonymous"></script>
     @endif
     @auth

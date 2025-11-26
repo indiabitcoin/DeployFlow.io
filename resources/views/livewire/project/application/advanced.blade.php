@@ -54,7 +54,7 @@
             @if ($application->build_pack === 'dockercompose')
                 <h3>Docker Compose</h3>
                 <x-forms.checkbox instantSave id="isRawComposeDeploymentEnabled" label="Raw Compose Deployment"
-                    helper="WARNING: Advanced use cases only. Your docker compose file will be deployed as-is. Nothing is modified by DeployFlow. You need to configure the proxy parts. More info in the <a class='underline dark:text-white' href='https://coolify.io/docs/knowledge-base/docker/compose#raw-docker-compose-deployment'>documentation.</a>"
+                    helper="WARNING: Advanced use cases only. Your docker compose file will be deployed as-is. Nothing is modified by DeployFlow. You need to configure the proxy parts. More info in the <a class='underline dark:text-white' href='https://deployflow.io/docs/knowledge-base/docker/compose#raw-docker-compose-deployment'>documentation.</a>"
                     canGate="update" :canResource="$application" />
             @endif
             <h3 class="pt-4">Container Names</h3>
@@ -74,7 +74,7 @@
             @if ($application->build_pack === 'dockercompose')
                 <h3 class="pt-4">Network</h3>
                 <x-forms.checkbox instantSave id="isConnectToDockerNetworkEnabled" label="Connect To Predefined Network"
-                    helper="By default, you do not reach the DeployFlow defined networks.<br>Starting a docker compose based resource will have an internal network. <br>If you connect to a DeployFlow defined network, you maybe need to use different internal DNS names to connect to a resource.<br><br>For more information, check <a class='underline dark:text-white' target='_blank' href='https://coolify.io/docs/knowledge-base/docker/compose#connect-to-predefined-networks'>this</a>."
+                    helper="By default, you do not reach the DeployFlow defined networks.<br>Starting a docker compose based resource will have an internal network. <br>If you connect to a DeployFlow defined network, you maybe need to use different internal DNS names to connect to a resource.<br><br>For more information, check <a class='underline dark:text-white' target='_blank' href='https://deployflow.io/docs/knowledge-base/docker/compose#connect-to-predefined-networks'>this</a>."
                     canGate="update" :canResource="$application" />
             @endif
             <h3 class="pt-4">Logs</h3>

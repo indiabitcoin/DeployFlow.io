@@ -14,7 +14,7 @@
             </div>
             <div>
                 For example application deployments, checkout <a class="underline dark:text-white"
-                    href="https://github.com/coollabsio/coolify-examples/" target="_blank">DeployFlow
+                    href="https://github.com/indiabitcoin/DeployFlow.io-examples/" target="_blank">DeployFlow
                     Examples</a>.
             </div>
         </div>

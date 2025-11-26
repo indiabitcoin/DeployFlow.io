@@ -129,7 +129,7 @@
                         respective
                         companies, and use of them does not imply any affiliation or endorsement.<br>Find more services
                         <a class="dark:text-white underline" target="_blank"
-                            href="https://coolify.io/docs/services/overview">here</a>.
+                            href="https://deployflow.io/docs/services/overview">here</a>.
                     </div>
 
                     <div class="grid justify-start grid-cols-1 gap-4 text-left xl:grid-cols-2">
