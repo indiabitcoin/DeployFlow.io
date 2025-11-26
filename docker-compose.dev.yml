@@ -22,7 +22,9 @@ services:
       - .:/var/www/html/:cached
       - dev_backups_data:/var/www/html/storage/app/backups
   postgres:
+    image: postgres:15-alpine
     pull_policy: always
+    container_name: deployflow-db
     ports:
       - "${FORWARD_DB_PORT:-5432}:5432"
     env_file:
@@ -34,14 +36,20 @@ services:
       POSTGRES_HOST_AUTH_METHOD: "trust"
     volumes:
       - dev_postgres_data:/var/lib/postgresql/data
+    networks:
+      - deployflow
   redis:
+    image: redis:7-alpine
     pull_policy: always
+    container_name: deployflow-redis
     ports:
       - "${FORWARD_REDIS_PORT:-6379}:6379"
     env_file:
       - .env
     volumes:
       - dev_redis_data:/data
+    networks:
+      - deployflow
   soketi:
     image: deployflow-realtime:dev
     pull_policy: never
