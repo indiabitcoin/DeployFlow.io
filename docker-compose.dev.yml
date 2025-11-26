@@ -21,6 +21,8 @@ services:
     volumes:
       - .:/var/www/html/:cached
       - dev_backups_data:/var/www/html/storage/app/backups
+    networks:
+      - deployflow
   postgres:
     image: postgres:15-alpine
     pull_policy: always
