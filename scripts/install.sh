@@ -435,7 +435,7 @@ if [ "$SSH_PERMIT_ROOT_LOGIN" = "yes" ] || [ "$SSH_PERMIT_ROOT_LOGIN" = "without
     echo " - SSH PermitRootLogin is enabled."
 else
     echo " - SSH PermitRootLogin is disabled."
-    echo "   If you have problems with SSH, please read this: https://coolify.io/docs/knowledge-base/server/openssh"
+    echo "   If you have problems with SSH, please read this: https://deployflow.io/docs/knowledge-base/server/openssh"
 fi
 
 # Detect if docker is installed via snap
